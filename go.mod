@@ -1,4 +1,4 @@
-module jaeger-tracing
+module github.com/akhidrb/jaeger-tracing
 
 go 1.13
 
