@@ -2,8 +2,8 @@ package main
 
 import (
 	middleware "github.com/MagalixTechnologies/core/middleware"
+	"github.com/akhidrb/jaeger-tracer/mw"
 	goahttp "goa.design/goa/v3/http"
-	"jaeger-tracing/mw"
 	"net/http"
 )
 

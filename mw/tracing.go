@@ -44,6 +44,7 @@ func SetServerSpan(spanName string) func(h http.Handler) http.Handler {
 			spanCtx, _ := tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(r.Header))
 			serverSpan := tracer.StartSpan(spanName, ext.RPCServerOption(spanCtx))
 			defer serverSpan.Finish()
+			h.ServeHTTP(w, r)
 		})
 	}
 }
