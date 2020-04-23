@@ -38,9 +38,9 @@ func setTracer(serviceName string) io.Closer {
 
 func SetServerSpan(spanName string) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
+		closer := setTracer(spanName)
+		defer closer.Close()
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			closer := setTracer(spanName)
-			defer closer.Close()
 			spanCtx, _ := tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(r.Header))
 			serverSpan := tracer.StartSpan(spanName, ext.RPCServerOption(spanCtx))
 			defer serverSpan.Finish()
