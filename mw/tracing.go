@@ -8,11 +8,11 @@ import (
 	jaegerlog "github.com/uber/jaeger-client-go/log"
 	"github.com/uber/jaeger-lib/metrics"
 	"io"
-	"log"
 	"net/http"
 )
 
 var tracer opentracing.Tracer
+var jLogger jaegerlog.Logger
 
 func setTracer(serviceName string) io.Closer {
 	cfg := jaegercfg.Configuration{
@@ -25,7 +25,7 @@ func setTracer(serviceName string) io.Closer {
 			LogSpans: true,
 		},
 	}
-	jLogger := jaegerlog.StdLogger
+	jLogger = jaegerlog.StdLogger
 	jMetricsFactory := metrics.NullFactory
 	var closer io.Closer
 	tracer, closer, _ = cfg.NewTracer(
@@ -36,15 +36,16 @@ func setTracer(serviceName string) io.Closer {
 	return closer
 }
 
-func SetServerSpan(spanName string, address string, pattern string) {
-	closer := setTracer(spanName)
-	defer closer.Close()
-	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		spanCtx, _ := tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(r.Header))
-		serverSpan := tracer.StartSpan(spanName, ext.RPCServerOption(spanCtx))
-		defer serverSpan.Finish()
-	})
-	log.Fatal(http.ListenAndServe(address, nil))
+func SetServerSpan(spanName string) func(h http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			closer := setTracer(spanName)
+			defer closer.Close()
+			spanCtx, _ := tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(r.Header))
+			serverSpan := tracer.StartSpan(spanName, ext.RPCServerOption(spanCtx))
+			defer serverSpan.Finish()
+		})
+	}
 }
 
 func SetClientSpan(spanName string, url string, requestType string) *http.Response {
