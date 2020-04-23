@@ -29,7 +29,6 @@ func setTracer(serviceName string) io.Closer {
 	jMetricsFactory := metrics.NullFactory
 	var closer io.Closer
 	tracer, closer, _ = cfg.NewTracer(
-		jaegercfg.Logger(jLogger),
 		jaegercfg.Metrics(jMetricsFactory),
 	)
 	opentracing.SetGlobalTracer(tracer)
