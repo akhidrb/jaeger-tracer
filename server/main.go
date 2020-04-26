@@ -3,22 +3,21 @@ package main
 import (
 	middleware "github.com/MagalixTechnologies/core/middleware"
 	"github.com/akhidrb/jaeger-tracer/mw"
-	goahttp "goa.design/goa/v3/http"
+	"github.com/go-chi/chi"
 	"net/http"
 )
 
+func RunServer() {
+	r := chi.NewRouter()
+	r.Use(mw.SetServerSpan("server"))
+	r.Use(middleware.Log(middleware.InfoLevel))
+
+	r.Get("/publish", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	http.ListenAndServe("localhost:8082", r)
+}
+
 func main() {
-	var mux goahttp.Muxer
-	{
-		mux = goahttp.NewMuxer()
-	}
-
-	var handler http.Handler = mux
-	{
-		handler = mw.SetServerSpan("server")(handler)
-		handler = middleware.Log(middleware.InfoLevel)(handler)
-	}
-
-	srv := &http.Server{Addr: "localhost:8082", Handler: handler}
-	srv.ListenAndServe()
+	RunServer()
 }

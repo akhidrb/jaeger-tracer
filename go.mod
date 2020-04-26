@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/MagalixTechnologies/core v0.0.0-20200416133409-10d2a2971e4f
 	github.com/dimfeld/httptreemux/v5 v5.2.1 // indirect
+	github.com/go-chi/chi v4.1.1+incompatible
 	github.com/labstack/echo-contrib v0.9.0
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/opentracing/opentracing-go v1.1.0
